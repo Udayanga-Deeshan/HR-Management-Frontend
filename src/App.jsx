@@ -1,18 +1,17 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import AddEmployee from './pages/RegisterEmployee/EmployeeForm'
-import EmployeeForm from './pages/RegisterEmployee/EmployeeForm'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import EmployeeForm from "./pages/RegisterEmployee/EmployeeForm";
+import EmployeeList from "./pages/EmployeeList/EmployeeList";
+
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <div className="container">
-      <EmployeeForm/>
-    </div>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<EmployeeList />} />
+        <Route path="/add-employee" element={<EmployeeForm />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
