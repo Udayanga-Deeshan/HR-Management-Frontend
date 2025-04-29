@@ -23,12 +23,16 @@ const EmployeeList = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const [editForm, setEditForm] = useState({
     name: "",
     email: "",
     department: "",
   });
   const [errors, setErrors] = useState({});
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState(null);
 
   const navigate = useNavigate();
 
@@ -81,13 +85,30 @@ const EmployeeList = () => {
         ...editForm,
       });
       setEditDialogOpen(false);
+      setSnackbarMessage("Employee updated successfully!");
       setSnackbarOpen(true);
       fetchEmployees();
     } catch (error) {
       console.error("Error updating employee:", error);
     }
   };
-  
+
+  const handleDeleteClick = (employee) => {
+    setEmployeeToDelete(employee);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:8080/api/employee/delete/${employeeToDelete.id}`);
+      setDeleteDialogOpen(false);
+      setSnackbarMessage("Employee deleted successfully!");
+      setSnackbarOpen(true);
+      fetchEmployees();
+    } catch (error) {
+      console.error("Error deleting employee:", error);
+    }
+  };
 
   const filteredEmployees = employees.filter((emp) =>
     [emp.name, emp.email, emp.department].some((field) =>
@@ -132,7 +153,7 @@ const EmployeeList = () => {
                   <td>{emp.department}</td>
                   <td>
                     <button className="edit-btn" onClick={() => handleEditClick(emp)}>Edit</button>
-                    <button className="delete-btn">Delete</button>
+                    <button className="delete-btn" onClick={() => handleDeleteClick(emp)}>Delete</button>
                   </td>
                 </tr>
               ))
@@ -194,13 +215,25 @@ const EmployeeList = () => {
       </Dialog>
 
       
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete <strong>{employeeToDelete?.name}</strong>?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} color="inherit">Cancel</Button>
+          <Button onClick={handleDelete} color="error" variant="contained">Delete</Button>
+        </DialogActions>
+      </Dialog>
+
+      
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
       >
         <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: "100%" }}>
-          Employee updated successfully!
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </div>
