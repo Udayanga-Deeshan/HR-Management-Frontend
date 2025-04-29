@@ -1,7 +1,10 @@
 import React, { useState } from "react";
+import axios from "axios";
 import "./EmployeeForm.css";
+import Alert from "@mui/material/Alert";
+import Collapse from "@mui/material/Collapse";
 
-const EmployeeForm = ({ onSubmit, onCancel }) => {
+const EmployeeForm = () => {
   const departments = ["HR", "IT", "FINANCE", "OPERATIONS"];
 
   const [formData, setFormData] = useState({
@@ -11,6 +14,8 @@ const EmployeeForm = ({ onSubmit, onCancel }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [errorOpen, setErrorOpen] = useState(false);
 
   const validate = () => {
     const newErrors = {};
@@ -28,12 +33,24 @@ const EmployeeForm = ({ onSubmit, onCancel }) => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: "" });
+    setSuccessOpen(false);
+    setErrorOpen(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
-      onSubmit(formData);
+      try {
+        await axios.post("http://localhost:8080/api/employee/add", formData);
+        setSuccessOpen(true);
+        setErrorOpen(false);
+        setFormData({ name: "", email: "", department: "" });
+        setTimeout(() => setSuccessOpen(false), 3000);
+      } catch (error) {
+        console.error("Error adding employee:", error);
+        setSuccessOpen(false);
+        setErrorOpen(true);
+      }
     }
   };
 
@@ -41,6 +58,18 @@ const EmployeeForm = ({ onSubmit, onCancel }) => {
     <div className="employee-form-container">
       <form className="employee-form" onSubmit={handleSubmit}>
         <h2>Add Employee</h2>
+
+        <Collapse in={successOpen}>
+          <Alert severity="success" sx={{ mb: 2 }}>
+            Employee added successfully!
+          </Alert>
+        </Collapse>
+
+        <Collapse in={errorOpen}>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            Failed to add employee. Please try again.
+          </Alert>
+        </Collapse>
 
         <div className="form-group">
           <label>Name</label>
